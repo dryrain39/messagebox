@@ -1,9 +1,13 @@
 package net.miscthings.messagelog.Entity;
 
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.List;
+import java.util.Set;
 
 
 @Entity
@@ -20,6 +24,8 @@ public class Account {
 
     private String password;
 
-    @ManyToOne()
-    private StringTag personalTag;
+    private String role;
+
+    @ManyToMany(mappedBy = "related")
+    private Set<Message> tagged;
 }

@@ -1,10 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+
+<html lang="ko" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
 <body>
 
+<form action="/v/submit_message" method="post" id="messageWriteForm">
+    <textarea name="messageContent" id="messageContent" cols="50" rows="5"></textarea>
+    <input type="submit">
+</form>
+
+<div class="messages">
+    <div th:each="message: ${messages}">
+        <span data-type="id" th:text="${message.getMessageId()}"></span> -
+        <span data-type="id" th:utext="${message.getMessageContent().replaceAll('\n', '<br>')}"></span>
+        <!--        <ul>-->
+        <!--            <li th:each="tag: ${message.getTags()}">-->
+        <!--                <span th:text="${tag.getTagId()} + '번 태그: '"></span>-->
+        <!--                <span th:text="${tag.getTagContent()}"></span>-->
+        <!--            </li>-->
+        <!--        </ul>-->
+    </div>
+</div>
+<script>
+    document.querySelector('#messageContent').addEventListener('keydown', function (e) {
+        if (e.keyCode === 13) {
+            // Ctrl + Enter
+            if (e.ctrlKey) {
+                console.log('ctrl+enter');
+                document.querySelector('#messageWriteForm').submit()
+            }
+        }
+    });
+</script>
 </body>
 </html>

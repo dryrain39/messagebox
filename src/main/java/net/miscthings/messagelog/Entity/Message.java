@@ -16,6 +16,10 @@ public class Message extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long messageId;
 
+    @ManyToMany
+    @JoinTable(name = "message_account")
+    private Set<Account> related = new HashSet<>();
+
     @ManyToMany()
     @JoinTable(name = "message_string_tag")
     private Set<StringTag> tags = new HashSet<>();

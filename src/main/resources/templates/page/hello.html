@@ -5,26 +5,54 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+            crossorigin="anonymous"></script>
+    <script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
 </head>
 <body>
 
-<form action="/v/submit_message" method="post" id="messageWriteForm">
-    <textarea name="messageContent" id="messageContent" cols="50" rows="5"></textarea>
-    <input type="submit">
-</form>
+<div class="container">
+    <div class="text-center mb-2 mt-2">
+        <form action="/v/submit_message" method="post" id="messageWriteForm" class="row">
+            <div class="col-12">
+                <textarea style="width: 100%" name="messageContent" id="messageContent" cols="50" rows="5"></textarea>
+                <!--        <input type="submit">-->
+            </div>
+            <div class="col-12">
+                <input type="submit" style="width: 100%">
+            </div>
+        </form>
+    </div>
 
-<div class="messages">
-    <div th:each="message: ${messages}">
-        <span data-type="id" th:text="${message.getMessageId()}"></span> -
-        <span data-type="id" th:utext="${message.getMessageContent().replaceAll('\n', '<br>')}"></span>
-        <!--        <ul>-->
-        <!--            <li th:each="tag: ${message.getTags()}">-->
-        <!--                <span th:text="${tag.getTagId()} + '번 태그: '"></span>-->
-        <!--                <span th:text="${tag.getTagContent()}"></span>-->
-        <!--            </li>-->
-        <!--        </ul>-->
+    <div class="messages row justify-content-md-center">
+
+        <div class="card col-12 mb-1" th:each="message: ${messages}">
+            <div class="card-body" style="padding: 0.5em;">
+                <div class="card-title">
+                    <span class="">#<span th:text="${message.getMessageId()}"></span></span>
+                    &mdash;
+                    <span th:each="account: ${message.getRelated()}">
+                        @<span th:text="${account.getName()}"></span>
+                    </span>
+                </div>
+                <h6 class="card-subtitle mb-2 text-muted">
+
+                </h6>
+                <p class="card-text" th:utext="${message.getMessageContent().replaceAll('\n', '<br>')}"></p>
+            </div>
+        </div>
+
     </div>
 </div>
+
 <script>
     document.querySelector('#messageContent').addEventListener('keydown', function (e) {
         if (e.keyCode === 13) {

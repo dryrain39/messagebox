@@ -11,11 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.security.Principal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,8 +32,8 @@ public class MessageService {
         return all;
     }
 
-    public void publishMessage(String messageContent) {
-
+    public void publishMessage(Account account, String messageContent) {
+        messageContent = messageContent.toLowerCase(Locale.ROOT);
         Set<String> tagStringSet = getTagString(messageContent);
         System.out.println("getTagString() = " + getTagString(messageContent));
 
@@ -58,9 +54,10 @@ public class MessageService {
             stringTagRepository.saveAll(stringTags);
         }
 
-        Optional<Account> account = accountRepository.findById(1L);
         Set<Account> accountSet = new HashSet<>();
-        accountSet.add(account.get());
+        accountSet.add(account);
+        accountSet.addAll(getMention(messageContent));
+
 
         Message message = new Message();
         message.setMessageContent(messageContent);
@@ -71,19 +68,33 @@ public class MessageService {
     }
 
     public Set<String> getTagString(String messageContent) {
-        Pattern hashPattern = Pattern.compile("(#[0-9a-zA-Z가-힣ㄱ-ㅎ_.]+)");
+        Pattern hashPattern = Pattern.compile("#([a-z가-힣ㄱ-ㅎ][0-9a-z가-힣ㄱ-ㅎ_.]+)");
+
+        return regexTextSearch(messageContent, hashPattern);
+    }
+
+    public Set<Account> getMention(String messageContent) {
+        Pattern hashPattern = Pattern.compile("@([a-z][a-z0-9_]+)");
+
+        Set<String> searchSet = regexTextSearch(messageContent, hashPattern);
+
+        Set<Account> allByNameIn = accountRepository.findAllByNameIn(searchSet);
+        System.out.println("allByNameIn = " + allByNameIn);
+        System.out.println("searchSet = " + searchSet);
+
+        return allByNameIn;
+    }
+
+    private Set<String> regexTextSearch(String messageContent, Pattern hashPattern) {
         Matcher matcher = hashPattern.matcher(messageContent);
-        Set<String> tagStringList = new HashSet<>();
+        Set<String> searchSet = new HashSet<>();
 
         int i = 0;
         while (matcher.find()) {
-            System.out.println("------------------------------------");
-            System.out.println("Group " + i + ": " + matcher.group(1));
-            tagStringList.add(matcher.group(1));
+            searchSet.add(matcher.group(1));
             i++;
-
         }
 
-        return tagStringList;
+        return searchSet;
     }
 }

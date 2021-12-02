@@ -24,5 +24,6 @@ public class Message extends BaseTimeEntity {
     @JoinTable(name = "message_string_tag")
     private Set<StringTag> tags = new HashSet<>();
 
+    @Column(columnDefinition="TEXT")
     private String messageContent;
 }

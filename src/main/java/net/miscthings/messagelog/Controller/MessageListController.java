@@ -41,10 +41,10 @@ public class MessageListController {
     }
 
     @PostMapping(value = {"/submit_message"})
-    public String submitMessage(HttpServletRequest request, Model model,
+    public String submitMessage(@AuthenticationPrincipal MLogUser mLogUser, Model model,
                                 @RequestParam String messageContent) throws Exception {
-
-        messageService.publishMessage(messageContent);
+        Account account = mLogUser.getAccount();
+        messageService.publishMessage(account, messageContent);
 
         return "redirect:/v/message_list";
     }

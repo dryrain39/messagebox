@@ -6,6 +6,7 @@ import net.miscthings.messagelog.DTO.PostMessage;
 import net.miscthings.messagelog.Entity.Account;
 import net.miscthings.messagelog.Entity.Message;
 import net.miscthings.messagelog.Service.MessageService;
+import net.miscthings.messagelog.TextEngine.TextEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +30,9 @@ public class MessageListController {
     @Autowired
     private MessageService messageService;
 
+    @Autowired
+    private TextEngine textEngine;
+
     @GetMapping(value = {"/"})
     public String messageList(@AuthenticationPrincipal MLogUser mLogUser, Model model,
                               @RequestParam(required = false) Integer p) throws Exception {
@@ -42,6 +46,10 @@ public class MessageListController {
                 Sort.by("lastModifiedAt").descending());
 
         Page<Message> messages = messageService.listMessage(account, pageRequest);
+
+        for (Message message : messages) {
+            message.setMessageContent(textEngine.prettyText(message.getMessageContent()));
+        }
 
         model.addAttribute("messages", messages);
         model.addAttribute("nextPage", "?p=" + (p + 1));

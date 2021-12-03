@@ -10,6 +10,12 @@
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/github.min.css">
+<!--    <link rel="stylesheet"-->
+<!--          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+
+    <script>hljs.highlightAll();</script>
 
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
@@ -19,6 +25,9 @@
             src="https://code.jquery.com/jquery-3.6.0.min.js"
             integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
             crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/showdown@1.9.1/dist/showdown.min.js"></script>
+
+
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard Variable', Roboto, 'Noto Sans KR', 'Segoe UI', 'Malgun Gothic', sans-serif;
@@ -52,8 +61,10 @@
                         #<span th:text="${message.getMessageId()}"></span>
                         <span style="font-size: 0.8em;" class="text-muted"
                               th:text="${#temporals.format(message.getLastModifiedAt(), 'yyyy-MM-dd HH:mm')}"></span>
-                        <a style="font-size: 0.8em;" class="text-muted" th:href="'edit?idx=' + ${message.getMessageId()}">Ed</a>
-                        <a style="font-size: 0.8em;" class="text-muted" th:href="'quit?idx=' + ${message.getMessageId()}">Qu</a>
+                        <a style="font-size: 0.8em;" class="text-muted"
+                           th:href="'edit?idx=' + ${message.getMessageId()}">Ed</a>
+                        <a style="font-size: 0.8em;" class="text-muted"
+                           th:href="'quit?idx=' + ${message.getMessageId()}">Qu</a>
                     </span>
                     &mdash;
                     <span style="font-size: 0.8em;" class="text-muted" th:each="account: ${message.getRelated()}">
@@ -63,10 +74,8 @@
                         <a href="#">#<span th:text="${tag.getTagContent()}"></span></a>
                     </span>
                 </div>
-                <h6 class="card-subtitle mb-2 text-muted">
-
-                </h6>
-                <p class="card-text" th:utext="${message.getMessageContent().replaceAll('\n', '<br>')}"></p>
+                <p class="card-text message-content"
+                   th:utext="${message.getMessageContent()}"></p>
             </div>
         </div>
 
@@ -83,6 +92,15 @@
 </div>
 
 <script>
+    // showdown.setFlavor('github');
+    showdown.setOption('tasklists', true);
+    showdown.setOption('requireSpaceBeforeHeadingText', true);
+    showdown.setOption('strikethrough', true);
+    showdown.setOption('simpleLineBreaks', true);
+    showdown.setOption('openLinksInNewWindow', true);
+    showdown.setOption('simplifiedAutoLink', true);
+    var converter = new showdown.Converter()
+
     document.querySelector('#messageContent').addEventListener('keydown', function (e) {
         if (e.keyCode === 13) {
             // Ctrl + Enter
@@ -96,6 +114,14 @@
     $("textarea.autosize").on('keydown keyup', function () {
         $(this).height(1).height($(this).prop('scrollHeight') + 24);
     });
+
+    $(document).ready(function () {
+
+        $('.message-content').each(function () {
+            $(this).html(converter.makeHtml($(this).html()))
+        })
+        hljs.highlightAll();
+    })
 </script>
 </body>
 </html>

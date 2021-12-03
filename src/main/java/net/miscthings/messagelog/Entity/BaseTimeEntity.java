@@ -6,6 +6,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.EntityListeners;
+import javax.persistence.Index;
 import javax.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 
@@ -16,4 +17,8 @@ public abstract class BaseTimeEntity {
     @CreatedDate
     @Getter
     private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Getter
+    private LocalDateTime lastModifiedAt;
 }

@@ -16,4 +16,5 @@ import java.util.Optional;
 public interface MessageRepository extends JpaRepository<Message, Long> {
     Optional<List<Message>> findByMessageId(Long messageId);
     Page<Message> findAllByRelated(Account account, Pageable pageable);
+    Optional<Message> findByMessageIdAndRelated(Long messageId, Account account);
 }

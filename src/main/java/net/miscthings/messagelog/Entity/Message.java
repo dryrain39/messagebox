@@ -10,7 +10,7 @@ import java.util.*;
 @Entity
 @Getter
 @Setter
-@Table(name = "message")
+@Table(name = "message", indexes = @Index(name = "lastModifiedAtDescIndex", columnList = "lastModifiedAt DESC"))
 public class Message extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

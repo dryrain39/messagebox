@@ -14,7 +14,8 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         HttpSession session = request.getSession();
         System.out.println("authentication.getPrincipal() = " + authentication.getPrincipal());
+        session.setMaxInactiveInterval(60 * 60 * 24); // 1d
         session.setAttribute("greeting", authentication.getName() + "님 반갑습니다.");
-        response.sendRedirect("/v/message_list/");
+        response.sendRedirect("/v/");
     }
 }

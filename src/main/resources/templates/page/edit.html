@@ -29,13 +29,14 @@
 
 <div class="container">
     <div class="text-center mb-2 mt-2">
-        <form action="/v/submit_message" method="post" id="messageWriteForm" class="row">
+        <form action="/v/edit_message" method="post" id="messageWriteForm" class="row">
+            <input type="hidden" name="idx" th:value="${message.getMessageId()}">
             <div class="col-12">
                 <textarea autofocus style="width: 100%; padding: 5px;" name="messageContent" id="messageContent"
                           cols="50"
                           class="autosize"
-                          rows="2"></textarea>
-                <!--        <input type="submit">-->
+                          rows="2"
+                th:text="${message.getMessageContent()}"></textarea>
             </div>
             <div class="col-12">
                 <input type="submit" style="width: 100%">
@@ -43,43 +44,6 @@
         </form>
     </div>
 
-    <div class="messages row justify-content-md-center">
-
-        <div class="card col-12 mb-1" th:each="message: ${messages}">
-            <div class="card-body" style="padding: 0.5em;">
-                <div class="card-title">
-                    <span class="">
-                        #<span th:text="${message.getMessageId()}"></span>
-                        <span style="font-size: 0.8em;" class="text-muted"
-                              th:text="${#temporals.format(message.getLastModifiedAt(), 'yyyy-MM-dd HH:mm')}"></span>
-                        <a style="font-size: 0.8em;" class="text-muted" th:href="'edit?idx=' + ${message.getMessageId()}">Ed</a>
-                        <a style="font-size: 0.8em;" class="text-muted" th:href="'quit?idx=' + ${message.getMessageId()}">Qu</a>
-                    </span>
-                    &mdash;
-                    <span style="font-size: 0.8em;" class="text-muted" th:each="account: ${message.getRelated()}">
-                        @<span th:text="${account.getName()}"></span>
-                    </span>
-                    <span style="font-size: 0.8em;" class="text-muted" th:each="tag: ${message.getTags()}">
-                        <a href="#">#<span th:text="${tag.getTagContent()}"></span></a>
-                    </span>
-                </div>
-                <h6 class="card-subtitle mb-2 text-muted">
-
-                </h6>
-                <p class="card-text" th:utext="${message.getMessageContent().replaceAll('\n', '<br>')}"></p>
-            </div>
-        </div>
-
-        <form class="col-6 mb-3 mt-2">
-            <a style="width: 100%" th:href="${prevPage}"
-               th:class="${prevPageDisabled? 'disabled': ''} + ' btn btn-outline-secondary'">&larr;</a>
-        </form>
-        <div class="col-6 mb-3 mt-2">
-            <a style="width: 100%" th:href="${nextPage}"
-               th:class="${nextPageDisabled? 'disabled': ''} + ' btn btn-outline-secondary'">&rarr;</a>
-        </div>
-
-    </div>
 </div>
 
 <script>
@@ -96,6 +60,7 @@
     $("textarea.autosize").on('keydown keyup', function () {
         $(this).height(1).height($(this).prop('scrollHeight') + 24);
     });
+    $("textarea.autosize").height(1).height($("textarea.autosize").prop('scrollHeight') + 24);
 </script>
 </body>
 </html>

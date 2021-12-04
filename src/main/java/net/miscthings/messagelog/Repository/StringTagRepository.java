@@ -15,4 +15,6 @@ public interface StringTagRepository extends JpaRepository<StringTag, Long> {
     Set<StringTag> findAllByTagContent(String tagContent);
 
     Set<StringTag> findAllByTagContentIn(Collection<String> stringCollection);
+
+    Set<StringTag> findStringTagsByTagContentContains(String query);
 }

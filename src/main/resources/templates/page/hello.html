@@ -11,8 +11,8 @@
     <link rel="stylesheet" type="text/css"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/github.min.css">
-<!--    <link rel="stylesheet"-->
-<!--          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">-->
+    <!--    <link rel="stylesheet"-->
+    <!--          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
 
     <script>hljs.highlightAll();</script>
@@ -26,6 +26,9 @@
             integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
             crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/showdown@1.9.1/dist/showdown.min.js"></script>
+    <script src="https://unpkg.com/@yaireo/tagify"></script>
+    <script src="https://unpkg.com/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+    <link href="https://unpkg.com/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css"/>
 
 
     <style>
@@ -37,8 +40,12 @@
 <body>
 
 <div class="container">
-    <div class="text-center mb-2 mt-2">
+    <div class="mb-2 mt-2">
         <form action="/v/submit_message" method="post" id="messageWriteForm" class="row">
+            <div class="col-12 mb-1">
+                <input id="autoTag" style="width: 100%"/>
+                <!--        <input type="submit">-->
+            </div>
             <div class="col-12">
                 <textarea autofocus style="width: 100%; padding: 5px;" name="messageContent" id="messageContent"
                           cols="50"
@@ -99,7 +106,8 @@
     showdown.setOption('simpleLineBreaks', true);
     showdown.setOption('openLinksInNewWindow', true);
     showdown.setOption('simplifiedAutoLink', true);
-    var converter = new showdown.Converter()
+    var converter = new showdown.Converter();
+
 
     document.querySelector('#messageContent').addEventListener('keydown', function (e) {
         if (e.keyCode === 13) {
@@ -122,6 +130,123 @@
         })
         hljs.highlightAll();
     })
+
+    // tagify
+    var inputElm = document.getElementById("autoTag");
+    let cache = {};
+    var tagify = new Tagify(inputElm);
+    // todo tagify 정규식 추가
+    // Chainable event listeners
+    tagify
+        .on('add', onAddTag)
+        .on('remove', onRemoveTag)
+        .on('input', onInput)
+        // .on('edit', onTagEdit)
+        // .on('invalid', onInvalidTag)
+        // .on('click', onTagClick)
+        // .on('focus', onTagifyFocusBlur)
+        // .on('blur', onTagifyFocusBlur)
+        .on('dropdown:hide dropdown:show', e => console.log(e.type))
+    let tagList = localStorage.getItem("tag");
+    try {
+        tagify.addTags(JSON.parse(tagList))
+    } catch (ignored) {
+    }
+    // .on('dropdown:select', onDropdownSelect)
+
+    let searchTag = function (searchText) {
+        return new Promise(function (resolve, reject) {
+            if (cache[searchText]) {
+                resolve(cache[searchText])
+                return cache[searchText];
+            }
+            $.ajax({
+                url: "/tag/search/?q=" + searchText,
+                success: function (data) {
+                    cache[searchText] = data.tags;
+                    resolve(data.tags)
+                },
+                error: function (request, status, error) {
+                    console.error(request, status, error)
+                    reject(request, status, error)
+                }
+            });
+            // timeout = setTimeout(resolve, duration || 700, whitelist)
+        })
+    }
+
+    // tag added callback
+    function onAddTag(e) {
+        updateTextBox(e);
+    }
+
+    // tag remvoed callback
+    function onRemoveTag(e) {
+        updateTextBox(e);
+    }
+
+    function updateTextBox(e) {
+        const autoTagRegex = /<!--AT .* -->\n/gm;
+        const messageContentElem = $("#messageContent");
+        console.log("onAddTag: ", e.detail);
+        console.log("original input value: ", inputElm.value)
+
+        let tagString = e.detail.tagify.value.map(t => "#" + t.value).join(" ");
+        let messageContent = messageContentElem.val();
+        if (!autoTagRegex.test(messageContent)) {
+            messageContent = "<!--AT   -->\n" + messageContent;
+            console.log("trigger")
+        }
+
+        messageContentElem.val(messageContent.replaceAll(autoTagRegex, `<!--AT ${tagString} -->\n`));
+        $(messageContentElem).height(1).height($(messageContentElem).prop('scrollHeight') + 24);
+
+        localStorage.setItem("tag", JSON.stringify(tagify.value))
+    }
+
+    // on character(s) added/removed (user is typing/deleting)
+    function onInput(e) {
+        if (e.detail.value.length < 1) {
+            return false;
+        }
+        console.log("onInput: ", e.detail);
+        tagify.whitelist = null; // reset current whitelist
+        tagify.loading(true) // show the loader animation
+
+        // get new whitelist from a delayed mocked request (Promise)
+        searchTag(e.detail.value)
+            .then(function (result) {
+                tagify.settings.whitelist = result.concat(tagify.value) // add already-existing tags to the new whitelist array
+                tagify
+                    .loading(false)
+                    // render the suggestions dropdown.
+                    .dropdown.show(e.detail.value);
+            })
+            .catch(err => tagify.dropdown.hide())
+    }
+
+    // function onTagEdit(e){
+    //     console.log("onTagEdit: ", e.detail);
+    // }
+
+    // invalid tag added callback
+    // function onInvalidTag(e){
+    //     console.log("onInvalidTag: ", e.detail);
+    // }
+
+    // invalid tag added callback
+    // function onTagClick(e){
+    //     console.log(e.detail);
+    //     console.log("onTagClick: ", e.detail);
+    // }
+    //
+    // function onTagifyFocusBlur(e){
+    //     console.log(e.type, "event fired")
+    // }
+
+    // function onDropdownSelect(e){
+    //     console.log("onDropdownSelect: ", e.detail)
+    // }
 </script>
 </body>
 </html>
